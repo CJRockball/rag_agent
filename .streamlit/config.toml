@@ -1,0 +1,7 @@
+[theme]
+# A vibrant, playful color scheme inspired by a carnival or funfair
+primaryColor = "#FF2E63"  # Bright pink for buttons and accents
+backgroundColor = "#0E1117"  # Dark background for a dramatic effect
+secondaryBackgroundColor = "#262730"  # Slightly lighter dark for sidebars
+textColor = "#FAFAFA"  # Light text for contrast
+font = "sans"  # Clean, modern font style
