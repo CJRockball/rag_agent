@@ -10,9 +10,9 @@ from langchain_community.document_loaders import PyPDFLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain import hub
 from langgraph.graph import START, END, StateGraph
-
-# Set up API key
-os.environ["GOOGLE_API_KEY"] = "AIzaSyCNT_pSF5LivN0Kmw2DBJFoQvzKWfCvogM"
+from dotenv import load_dotenv
+# loading variables from .env file
+load_dotenv() 
 
 # Configuration
 DOC_PATH = "pdfs/Tender_Specs_ECDC2024OP0017_V1.pdf"  # Path to your PDF
