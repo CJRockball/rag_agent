@@ -13,9 +13,11 @@ class TestRAGChatIntegration:
 
     def test_end_to_end_flow(self, test_environment, sample_documents):
         """Test the complete flow from user input to response."""
-        with patch("src.agent.agent_core.db") as mock_db, patch(
-            "src.agent.agent_core.llm"
-        ) as mock_llm, patch("src.agent.agent_core.graph") as mock_graph:
+        with (
+            patch("src.agent.agent_core.db") as mock_db,
+            patch("src.agent.agent_core.llm") as mock_llm,
+            patch("src.agent.agent_core.graph") as mock_graph,
+        ):
 
             # Mock the complete flow
             mock_db.similarity_search.return_value = sample_documents
@@ -38,7 +40,10 @@ class TestRAGChatIntegration:
             result = ask_rag("What is AI?")
 
             # Verify the complete flow
-            assert result == "AI is the simulation of human intelligence in machines."
+            assert (
+                result
+                == "AI is the simulation of human intelligence in machines."
+            )
             mock_db.similarity_search.assert_called_once()
             mock_llm.invoke.assert_called_once()
             mock_graph.stream.assert_called_once()
@@ -94,9 +99,10 @@ class TestRAGChatIntegration:
 
     def test_data_consistency(self, sample_documents):
         """Test data consistency through the pipeline."""
-        with patch("src.agent.agent_core.db") as mock_db, patch(
-            "agent_core.llm"
-        ) as mock_llm:
+        with (
+            patch("src.agent.agent_core.db") as mock_db,
+            patch("agent_core.llm") as mock_llm,
+        ):
 
             # Test that the same input produces consistent output
             mock_db.similarity_search.return_value = sample_documents
@@ -145,7 +151,9 @@ class TestSystemResilience:
     def test_llm_service_unavailable(self):
         """Test behavior when LLM service is unavailable."""
         with patch("src.agent.agent_core.llm") as mock_llm:
-            mock_llm.invoke.side_effect = ConnectionError("LLM service unavailable")
+            mock_llm.invoke.side_effect = ConnectionError(
+                "LLM service unavailable"
+            )
 
             from src.agent.agent_core import generate
 
@@ -159,9 +167,10 @@ class TestSystemResilience:
 
     def test_partial_system_failure(self):
         """Test system behavior with partial failures."""
-        with patch("src.agent.agent_core.db") as mock_db, patch(
-            "agent_core.llm"
-        ) as mock_llm:
+        with (
+            patch("src.agent.agent_core.db") as mock_db,
+            patch("agent_core.llm") as mock_llm,
+        ):
 
             # Database works but returns empty results
             mock_db.similarity_search.return_value = []
@@ -205,7 +214,8 @@ class TestSystemResilience:
         with patch("src.agent.agent_core.db") as mock_db:
             # Simulate large response
             large_documents = [
-                Document(page_content="Large content " * 1000) for _ in range(100)
+                Document(page_content="Large content " * 1000)
+                for _ in range(100)
             ]
             mock_db.similarity_search.return_value = large_documents
 
@@ -245,7 +255,9 @@ class TestDataFlow:
 
                 # Should handle all question formats
                 assert "context" in result
-                mock_db.similarity_search.assert_called_with(query=question, k=3)
+                mock_db.similarity_search.assert_called_with(
+                    query=question, k=3
+                )
 
     def test_context_processing(self, sample_documents):
         """Test context processing and formatting."""

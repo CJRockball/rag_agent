@@ -4,19 +4,23 @@
 import os
 from typing import TypedDict, List
 from langchain_core.documents import Document
-from langchain_google_genai import ChatGoogleGenerativeAI, GoogleGenerativeAIEmbeddings
+from langchain_google_genai import (
+    ChatGoogleGenerativeAI,
+    GoogleGenerativeAIEmbeddings,
+)
 from langchain_chroma import Chroma
 from langchain_community.document_loaders import PyPDFLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain import hub
 from langgraph.graph import START, END, StateGraph
 from dotenv import load_dotenv
+
 # loading variables from .env file
-load_dotenv() 
+load_dotenv()
 
 # Configuration
 DOC_PATH = "pdfs/Tender_Specs_ECDC2024OP0017_V1.pdf"  # Path to your PDF
-CHROMA_DB_PATH = "my_rag_agent/src/utils/vectorstore/db_chroma"
+CHROMA_DB_PATH = "src/utils/vectorstore/db_chroma"
 COLLECTION_NAME = "v_db"
 
 
@@ -29,7 +33,9 @@ class State(TypedDict):
 
 # Initialize LLM and embeddings
 llm = ChatGoogleGenerativeAI(model="gemini-2.0-flash", temperature=0.1)
-doc_embeddings = GoogleGenerativeAIEmbeddings(model="models/text-embedding-004")
+doc_embeddings = GoogleGenerativeAIEmbeddings(
+    model="models/text-embedding-004"
+)
 
 
 # Vector Database Setup Function

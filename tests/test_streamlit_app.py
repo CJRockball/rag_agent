@@ -221,7 +221,9 @@ class TestStreamlitAppPerformance:
             end_time = time.time()
 
             # Simulate processing time
-            assert end_time - start_time < 5.0  # Should respond within 5 seconds
+            assert (
+                end_time - start_time < 5.0
+            )  # Should respond within 5 seconds
             return result
 
         mock_ask_rag.side_effect = timed_response
@@ -255,10 +257,13 @@ class TestStreamlitAppPerformance:
 @pytest.fixture
 def mock_streamlit_components():
     """Mock Streamlit components for testing."""
-    with patch("streamlit.set_page_config"), patch("streamlit.title"), patch(
-        "streamlit.markdown"
-    ), patch("streamlit.chat_input"), patch("streamlit.chat_message"), patch(
-        "streamlit.spinner"
+    with (
+        patch("streamlit.set_page_config"),
+        patch("streamlit.title"),
+        patch("streamlit.markdown"),
+        patch("streamlit.chat_input"),
+        patch("streamlit.chat_message"),
+        patch("streamlit.spinner"),
     ):
         yield
 

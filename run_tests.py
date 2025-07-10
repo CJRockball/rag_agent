@@ -47,9 +47,7 @@ def run_all_tests():
 
 def run_tests_with_coverage():
     """Run tests with coverage report."""
-    cmd = (
-        "python -m pytest tests/ --cov=. --cov-report=html --cov-report=term-missing -v"
-    )
+    cmd = "python -m pytest tests/ --cov=. --cov-report=html --cov-report=term-missing -v"
     return run_command(cmd, "Tests with Coverage")
 
 
@@ -150,7 +148,9 @@ def generate_test_report():
 
     # Overall result
     all_passed = all(results.values())
-    overall_status = "✅ ALL TESTS PASSED" if all_passed else "❌ SOME TESTS FAILED"
+    overall_status = (
+        "✅ ALL TESTS PASSED" if all_passed else "❌ SOME TESTS FAILED"
+    )
     print(f"\nOverall Status: {overall_status}")
 
     return all_passed
@@ -158,15 +158,21 @@ def generate_test_report():
 
 def main():
     """Main test runner function."""
-    parser = argparse.ArgumentParser(description="Test runner for RAG Chat application")
-    parser.add_argument("--unit", action="store_true", help="Run unit tests only")
+    parser = argparse.ArgumentParser(
+        description="Test runner for RAG Chat application"
+    )
+    parser.add_argument(
+        "--unit", action="store_true", help="Run unit tests only"
+    )
     parser.add_argument(
         "--integration", action="store_true", help="Run integration tests only"
     )
     parser.add_argument(
         "--streamlit", action="store_true", help="Run Streamlit tests only"
     )
-    parser.add_argument("--agent", action="store_true", help="Run agent tests only")
+    parser.add_argument(
+        "--agent", action="store_true", help="Run agent tests only"
+    )
     parser.add_argument(
         "--performance", action="store_true", help="Run performance tests only"
     )
@@ -182,9 +188,13 @@ def main():
     )
     parser.add_argument("--all", action="store_true", help="Run all tests")
     parser.add_argument(
-        "--report", action="store_true", help="Generate comprehensive test report"
+        "--report",
+        action="store_true",
+        help="Generate comprehensive test report",
     )
-    parser.add_argument("--setup", action="store_true", help="Set up test environment")
+    parser.add_argument(
+        "--setup", action="store_true", help="Set up test environment"
+    )
 
     args = parser.parse_args()
 

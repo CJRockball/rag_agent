@@ -115,7 +115,9 @@ class TestRAGAgent:
         result = ask_rag("What is AI?")
 
         # Assertions
-        assert result == "AI is the simulation of human intelligence in machines."
+        assert (
+            result == "AI is the simulation of human intelligence in machines."
+        )
         mock_graph.stream.assert_called_once_with(
             {"question": "What is AI?"}, stream_mode="values"
         )
@@ -126,7 +128,10 @@ class TestRAGAgent:
         from src.agent.agent_core import ask_rag
 
         # Mock the graph stream with no answer
-        mock_graph.stream.return_value = [{"question": "What is AI?"}, {"context": []}]
+        mock_graph.stream.return_value = [
+            {"question": "What is AI?"},
+            {"context": []},
+        ]
 
         # Test the ask_rag function
         result = ask_rag("What is AI?")
@@ -204,7 +209,9 @@ class TestRAGAgentIntegration:
 
         # Mock the database response
         mock_documents = [
-            Document(page_content="AI is the simulation of human intelligence."),
+            Document(
+                page_content="AI is the simulation of human intelligence."
+            ),
             Document(page_content="Machine learning is a subset of AI."),
             Document(page_content="Deep learning uses neural networks."),
         ]
@@ -227,7 +234,10 @@ class TestRAGAgentIntegration:
 
             result = ask_rag("What is AI?")
 
-            assert result == "AI is the simulation of human intelligence in machines."
+            assert (
+                result
+                == "AI is the simulation of human intelligence in machines."
+            )
 
 
 class TestRAGAgentErrorHandling:
