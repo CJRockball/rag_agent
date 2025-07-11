@@ -15,15 +15,31 @@ from langchain_community.document_loaders import (
 from langchain.text_splitter import (
     RecursiveCharacterTextSplitter,
 )
-from dotenv import load_dotenv
+import streamlit as st
 
-# loading variables from .env file
-load_dotenv()
 
-# Configuration
-DOC_PATH = "resources/Tender_Specs_ECDC2024OP0017_V1.pdf"  # Path to your PDF
-CHROMA_DB_PATH = "src/utils/vectorstore/db_chroma"
-COLLECTION_NAME = "v_db"
+# Replace with Streamlit secrets management
+def get_google_api_key():
+    """Get Google API key from Streamlit secrets"""
+    print(st.secrets["CHROMA_DB_PATH"])
+    try:
+        return st.secrets["GOOGLE_API_KEY"]
+    except KeyError:
+        st.error("❌ GOOGLE_API_KEY not found in Streamlit secrets")
+        st.stop()
+
+
+# Set the API key for Google services
+os.environ["GOOGLE_API_KEY"] = get_google_api_key()
+
+# Configuration using Streamlit secrets with fallbacks
+DOC_PATH = st.secrets.get(
+    "DOC_PATH", "pdfs/Tender_Specs_ECDC2024OP0017_V1.pdf"
+)
+CHROMA_DB_PATH = st.secrets.get(
+    "CHROMA_DB_PATH", "src/utils/vectorstore/db_chroma"
+)
+COLLECTION_NAME = st.secrets.get("COLLECTION_NAME", "v_db")
 
 
 # State definition for the agent

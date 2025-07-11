@@ -1,5 +1,5 @@
 # %%
-# import os
+import os
 from typing import TypedDict, List
 from langchain_core.documents import Document
 from langchain_core.messages import (
@@ -12,16 +12,27 @@ from langchain_google_genai import (
 )
 from langchain_chroma import Chroma
 from langgraph.graph import START, END, StateGraph
-
-# # importing necessary functions from dotenv library
-# from dotenv import load_dotenv
-# # loading variables from .env file
-# load_dotenv()
+import streamlit as st
 
 # ─── Configuration ──────────────────────────────────────────────────────────
 
-CHROMA_DB_PATH = "src/utils/vectorstore/db_chroma"
-COLLECTION_NAME = "v_db"
+
+# Replace with Streamlit secrets management
+def get_google_api_key():
+    """Get Google API key from Streamlit secrets"""
+    try:
+        return st.secrets["GOOGLE_API_KEY"]
+    except KeyError:
+        st.error("❌ GOOGLE_API_KEY not found in Streamlit secrets")
+        st.stop()
+
+
+# Set the API key for Google services
+os.environ["GOOGLE_API_KEY"] = get_google_api_key()
+CHROMA_DB_PATH = st.secrets.get(
+    "CHROMA_DB_PATH", "src/utils/vectorstore/db_chroma"
+)
+COLLECTION_NAME = st.secrets.get("COLLECTION_NAME", "v_db")
 
 
 # ─── State Definition ───────────────────────────────────────────────────────
