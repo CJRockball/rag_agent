@@ -1,8 +1,11 @@
 # %%
-import os
+# import os
 from typing import TypedDict, List
 from langchain_core.documents import Document
-from langchain_core.messages import HumanMessage, SystemMessage
+from langchain_core.messages import (
+    HumanMessage,
+    SystemMessage,
+)
 from langchain_google_genai import (
     ChatGoogleGenerativeAI,
     GoogleGenerativeAIEmbeddings,
@@ -10,11 +13,10 @@ from langchain_google_genai import (
 from langchain_chroma import Chroma
 from langgraph.graph import START, END, StateGraph
 
-# importing necessary functions from dotenv library
-from dotenv import load_dotenv
-
-# loading variables from .env file
-load_dotenv()
+# # importing necessary functions from dotenv library
+# from dotenv import load_dotenv
+# # loading variables from .env file
+# load_dotenv()
 
 # ─── Configuration ──────────────────────────────────────────────────────────
 
@@ -53,8 +55,9 @@ def generate(state: State):
     """Generate answer based on retrieved context."""
     # Create proper message objects for ChatGoogleGenerativeAI
     system_prompt = (
-        "You are an assistant. Use the context below to answer the question.\n\n"
-        f"Context:\n{chr(10).join(d.page_content for d in state['context'])}"
+        "You are an assistant. Use the context below to answer \
+            the question.\n\n"
+        f"Context: \n{chr(10).join(d.page_content for d in state['context'])}"
     )
 
     messages = [

@@ -7,7 +7,8 @@ MAX_REQUEST = 10  # questions per window
 
 
 def allow_request() -> bool:
-    """Return True if the user can make another request in the current window."""
+    """Return True if the user can make another request in\
+        the current window."""
     now = time.time()
 
     # first visit – initialise counters

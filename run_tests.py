@@ -8,7 +8,8 @@ import os
 import sys
 import subprocess
 import argparse
-from pathlib import Path
+
+# from pathlib import Path
 
 
 def run_command(cmd, description=""):
@@ -47,7 +48,8 @@ def run_all_tests():
 
 def run_tests_with_coverage():
     """Run tests with coverage report."""
-    cmd = "python -m pytest tests/ --cov=. --cov-report=html --cov-report=term-missing -v"
+    cmd = "python -m pytest tests/ --cov=. --cov-report=html \
+        --cov-report=term-missing -v"
     return run_command(cmd, "Tests with Coverage")
 
 
@@ -72,9 +74,15 @@ def run_agent_tests():
 def run_linting():
     """Run code linting."""
     commands = [
-        ("python -m black --check .", "Black formatting check"),
+        (
+            "python -m black --check .",
+            "Black formatting check",
+        ),
         ("python -m flake8 .", "Flake8 linting"),
-        ("python -m isort --check-only .", "Import sorting check"),
+        (
+            "python -m isort --check-only .",
+            "Import sorting check",
+        ),
     ]
 
     success = True
@@ -144,7 +152,7 @@ def generate_test_report():
 
     for name, success in results.items():
         status = "✅ PASSED" if success else "❌ FAILED"
-        print(f"{name:<20} {status}")
+        print(f"{name: <20} {status}")
 
     # Overall result
     all_passed = all(results.values())
@@ -162,29 +170,49 @@ def main():
         description="Test runner for RAG Chat application"
     )
     parser.add_argument(
-        "--unit", action="store_true", help="Run unit tests only"
+        "--unit",
+        action="store_true",
+        help="Run unit tests only",
     )
     parser.add_argument(
-        "--integration", action="store_true", help="Run integration tests only"
+        "--integration",
+        action="store_true",
+        help="Run integration tests only",
     )
     parser.add_argument(
-        "--streamlit", action="store_true", help="Run Streamlit tests only"
+        "--streamlit",
+        action="store_true",
+        help="Run Streamlit tests only",
     )
     parser.add_argument(
-        "--agent", action="store_true", help="Run agent tests only"
+        "--agent",
+        action="store_true",
+        help="Run agent tests only",
     )
     parser.add_argument(
-        "--performance", action="store_true", help="Run performance tests only"
+        "--performance",
+        action="store_true",
+        help="Run performance tests only",
     )
     parser.add_argument(
-        "--coverage", action="store_true", help="Run tests with coverage"
-    )
-    parser.add_argument("--lint", action="store_true", help="Run linting only")
-    parser.add_argument(
-        "--type-check", action="store_true", help="Run type checking only"
+        "--coverage",
+        action="store_true",
+        help="Run tests with coverage",
     )
     parser.add_argument(
-        "--security", action="store_true", help="Run security checks only"
+        "--lint",
+        action="store_true",
+        help="Run linting only",
+    )
+    parser.add_argument(
+        "--type-check",
+        action="store_true",
+        help="Run type checking only",
+    )
+    parser.add_argument(
+        "--security",
+        action="store_true",
+        help="Run security checks only",
     )
     parser.add_argument("--all", action="store_true", help="Run all tests")
     parser.add_argument(
@@ -193,7 +221,9 @@ def main():
         help="Generate comprehensive test report",
     )
     parser.add_argument(
-        "--setup", action="store_true", help="Set up test environment"
+        "--setup",
+        action="store_true",
+        help="Set up test environment",
     )
 
     args = parser.parse_args()

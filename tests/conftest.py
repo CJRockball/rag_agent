@@ -24,15 +24,21 @@ def sample_documents():
     """Provide sample documents for testing."""
     return [
         Document(
-            page_content="Artificial Intelligence (AI) is the simulation of human intelligence in machines.",
-            metadata={"source": "ai_basics.pdf", "page": 1},
+            page_content="Artificial Intelligence (AI) is the simulation \
+                of human intelligence in machines.",
+            metadata={
+                "source": "ai_basics.pdf",
+                "page": 1,
+            },
         ),
         Document(
-            page_content="Machine Learning is a subset of AI that enables computers to learn without being explicitly programmed.",
+            page_content="Machine Learning is a subset of AI that enables \
+                computers to learn without being explicitly programmed.",
             metadata={"source": "ml_intro.pdf", "page": 1},
         ),
         Document(
-            page_content="Deep Learning uses neural networks with multiple layers to model and understand complex patterns.",
+            page_content="Deep Learning uses neural networks with \
+                multiple layers to model and understand complex patterns.",
             metadata={"source": "dl_guide.pdf", "page": 1},
         ),
     ]
@@ -45,10 +51,12 @@ def sample_state():
         "question": "What is artificial intelligence?",
         "context": [
             Document(
-                page_content="AI is the simulation of human intelligence in machines."
+                page_content="AI is the simulation of human intelligence \
+                    in machines."
             ),
             Document(
-                page_content="Machine learning is a subset of artificial intelligence."
+                page_content="Machine learning is a subset of \
+                    artificial intelligence."
             ),
             Document(page_content="Deep learning uses neural networks."),
         ],
@@ -80,7 +88,13 @@ def mock_chroma_db():
 def mock_embeddings():
     """Mock embeddings for testing."""
     mock = Mock()
-    mock.embed_query.return_value = [0.1, 0.2, 0.3, 0.4, 0.5]
+    mock.embed_query.return_value = [
+        0.1,
+        0.2,
+        0.3,
+        0.4,
+        0.5,
+    ]
     return mock
 
 
@@ -213,14 +227,17 @@ def pytest_configure(config):
     """Configure pytest settings."""
     # Add custom markers
     config.addinivalue_line(
-        "markers", "slow: marks tests as slow (deselect with '-m 'not slow'')"
+        "markers",
+        "slow: marks tests as slow (deselect with '-m 'not slow'')",
     )
     config.addinivalue_line(
-        "markers", "integration: marks tests as integration tests"
+        "markers",
+        "integration: marks tests as integration tests",
     )
     config.addinivalue_line("markers", "unit: marks tests as unit tests")
     config.addinivalue_line(
-        "markers", "performance: marks tests as performance tests"
+        "markers",
+        "performance: marks tests as performance tests",
     )
 
 

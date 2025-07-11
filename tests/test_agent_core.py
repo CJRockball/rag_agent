@@ -1,10 +1,14 @@
 """Test suite for the RAG agent core functionality."""
 
 import pytest
-from unittest.mock import Mock, patch, MagicMock
+from unittest.mock import Mock, patch  # , MagicMock
 from langchain_core.documents import Document
-from langchain_core.messages import HumanMessage, SystemMessage
-from typing import List, Dict, Any
+from langchain_core.messages import (
+    HumanMessage,
+    SystemMessage,
+)
+
+# from typing import List, Dict, Any
 import os
 
 # Import the functions we want to test
@@ -22,16 +26,20 @@ class TestRAGAgent:
             "question": "What is artificial intelligence?",
             "context": [
                 Document(
-                    page_content="AI is the simulation of human intelligence in machines."
+                    page_content="AI is the simulation of human intelligence\
+                    in machines."
                 ),
                 Document(
-                    page_content="Machine learning is a subset of artificial intelligence."
+                    page_content="Machine learning is a subset of \
+                        artificial intelligence."
                 ),
                 Document(
-                    page_content="Deep learning uses neural networks with multiple layers."
+                    page_content="Deep learning uses neural networks\
+                        with multiple layers."
                 ),
             ],
-            "answer": "AI is the simulation of human intelligence in machines.",
+            "answer": "AI is the simulation of human intelligence\
+                in machines.",
         }
 
     @pytest.fixture
@@ -39,13 +47,16 @@ class TestRAGAgent:
         """Create mock documents for testing."""
         return [
             Document(
-                page_content="AI is the simulation of human intelligence in machines."
+                page_content="AI is the simulation of human intelligence\
+                    in machines."
             ),
             Document(
-                page_content="Machine learning is a subset of artificial intelligence."
+                page_content="Machine learning is a subset of\
+                    artificial intelligence."
             ),
             Document(
-                page_content="Deep learning uses neural networks with multiple layers."
+                page_content="Deep learning uses neural networks \
+                    with multiple layers."
             ),
         ]
 
@@ -119,7 +130,8 @@ class TestRAGAgent:
             result == "AI is the simulation of human intelligence in machines."
         )
         mock_graph.stream.assert_called_once_with(
-            {"question": "What is AI?"}, stream_mode="values"
+            {"question": "What is AI?"},
+            stream_mode="values",
         )
 
     @patch("src.agent.agent_core.graph")
@@ -141,7 +153,9 @@ class TestRAGAgent:
 
     @patch("src.agent.agent_core.graph")
     def test_ask_rag_with_string_answer(self, mock_graph):
-        """Test ask_rag when answer is a string instead of object with content."""
+        """Test ask_rag when answer is a string instead of
+        object with content.
+        """
         from src.agent.agent_core import ask_rag
 
         # Mock the graph stream with string answer
@@ -189,7 +203,11 @@ class TestRAGAgentIntegration:
     @patch("src.agent.agent_core.ChatGoogleGenerativeAI")
     @patch("src.agent.agent_core.GoogleGenerativeAIEmbeddings")
     def test_component_initialization(
-        self, mock_embeddings, mock_llm, mock_chroma, setup_test_environment
+        self,
+        mock_embeddings,
+        mock_llm,
+        mock_chroma,
+        setup_test_environment,
     ):
         """Test that all components are properly initialized."""
         # Import after patching

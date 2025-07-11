@@ -1,8 +1,9 @@
 """Test suite for the Streamlit RAG Chat application."""
 
 import pytest
-from unittest.mock import Mock, patch, MagicMock
-import streamlit as st
+from unittest.mock import patch  # , Mock,  MagicMock
+
+# import streamlit as st
 from streamlit.testing.v1 import AppTest
 
 # Note: Streamlit testing requires special setup
@@ -149,20 +150,29 @@ class TestStreamlitAppIntegration:
         assert len(app.markdown) > 0  # Description should be present
 
         # Chat input should be available
-        # Note: The exact check depends on Streamlit version and testing framework
+        # Note: The exact check depends on Streamlit version
+        # and testing framework
         assert not app.exception
 
     @patch("streamlit_app.ask_rag")
     def test_multiple_conversations(self, mock_ask_rag):
         """Test multiple conversation turns."""
-        responses = ["First response", "Second response", "Third response"]
+        responses = [
+            "First response",
+            "Second response",
+            "Third response",
+        ]
         mock_ask_rag.side_effect = responses
 
         app = AppTest.from_file("streamlit_app.py")
         app.run()
 
         # Simulate multiple user inputs
-        questions = ["Question 1", "Question 2", "Question 3"]
+        questions = [
+            "Question 1",
+            "Question 2",
+            "Question 3",
+        ]
 
         for i, question in enumerate(questions):
             if app.chat_input:

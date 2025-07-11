@@ -2,12 +2,17 @@ import time
 import streamlit as st
 from src.agent.agent_core import ask_rag
 from src.utils.security import validate_api_key
-from src.utils.rate_limit import allow_request, record_request
+from src.utils.rate_limit import (
+    allow_request,
+    record_request,
+)
 
 
 # ─── Streamlit Configuration ───────────────────────────────────────────────
 st.set_page_config(
-    page_title="PDF RAG Chat", page_icon="💬", layout="centered"
+    page_title="PDF RAG Chat",
+    page_icon="💬",
+    layout="centered",
 )
 
 # Validate api key

@@ -2,9 +2,10 @@
 
 import pytest
 import os
-from unittest.mock import Mock, patch, MagicMock
+from unittest.mock import Mock, patch  # , MagicMock
 from langchain_core.documents import Document
-import time
+
+# import time
 
 
 @pytest.mark.integration
@@ -111,7 +112,10 @@ class TestRAGChatIntegration:
             mock_response.content = "Consistent response"
             mock_llm.invoke.return_value = mock_response
 
-            from src.agent.agent_core import retrieve, generate
+            from src.agent.agent_core import (
+                retrieve,
+                generate,
+            )
 
             # Test retrieve consistency
             state = {"question": "What is AI?"}
@@ -180,7 +184,10 @@ class TestSystemResilience:
             mock_response.content = "Response with no context"
             mock_llm.invoke.return_value = mock_response
 
-            from src.agent.agent_core import retrieve, generate
+            from src.agent.agent_core import (
+                retrieve,
+                generate,
+            )
 
             # Test retrieve with empty results
             state = {"question": "test"}
@@ -188,7 +195,10 @@ class TestSystemResilience:
             assert result["context"] == []
 
             # Test generate with empty context
-            state_with_empty_context = {"question": "test", "context": []}
+            state_with_empty_context = {
+                "question": "test",
+                "context": [],
+            }
 
             gen_result = generate(state_with_empty_context)
             assert gen_result["answer"] == mock_response
@@ -266,11 +276,14 @@ class TestDataFlow:
             mock_response.content = "Test response"
             mock_llm.invoke.return_value = mock_response
 
-            from src.agent.agent_core import generate
+            # from src.agent.agent_core import generate
 
-            state = {"question": "What is AI?", "context": sample_documents}
+            # state = {
+            #     "question": "What is AI?",
+            #     "context": sample_documents,
+            # }
 
-            result = generate(state)
+            # result = generate(state)
 
             # Check that LLM was called with properly formatted context
             call_args = mock_llm.invoke.call_args[0][0]

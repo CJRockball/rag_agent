@@ -9,13 +9,15 @@ def validate_api_key():
 
     if not api_key:
         st.error(
-            "❌ Google API key is not configured. Please set GOOGLE_API_KEY environment variable."
+            "❌ Google API key is not configured. \
+                Please set GOOGLE_API_KEY environment variable."
         )
         st.stop()
 
     if not api_key.startswith("AIza"):
         st.error(
-            "❌ Invalid API key format. Google API keys should start with 'AIza'."
+            "❌ Invalid API key format. \
+                Google API keys should start with 'AIza'."
         )
         st.stop()
 

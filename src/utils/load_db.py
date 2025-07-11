@@ -9,17 +9,19 @@ from langchain_google_genai import (
     GoogleGenerativeAIEmbeddings,
 )
 from langchain_chroma import Chroma
-from langchain_community.document_loaders import PyPDFLoader
-from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain import hub
-from langgraph.graph import START, END, StateGraph
+from langchain_community.document_loaders import (
+    PyPDFLoader,
+)
+from langchain.text_splitter import (
+    RecursiveCharacterTextSplitter,
+)
 from dotenv import load_dotenv
 
 # loading variables from .env file
 load_dotenv()
 
 # Configuration
-DOC_PATH = "pdfs/Tender_Specs_ECDC2024OP0017_V1.pdf"  # Path to your PDF
+DOC_PATH = "resources/Tender_Specs_ECDC2024OP0017_V1.pdf"  # Path to your PDF
 CHROMA_DB_PATH = "src/utils/vectorstore/db_chroma"
 COLLECTION_NAME = "v_db"
 
