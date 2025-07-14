@@ -4,36 +4,27 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 
 
 def validate_api_key():
-    """Validate Google API key before app startup"""
-    try:
-        api_key = st.secrets["GOOGLE_API_KEY"]
-    except KeyError:
-        st.error(
-            "❌ Google API key is not configured. \
-            Please set GOOGLE_API_KEY in Streamlit secrets."
-        )
-        st.stop()
+    """Validate Google API key from environment variable"""
+    # API key should now be in os.environ from startup initialization
+    api_key = os.environ.get("GOOGLE_API_KEY")
 
     if not api_key:
-        st.error(
-            "❌ Google API key is empty. \
-                Please provide a valid GOOGLE_API_KEY in Streamlit secrets."
-        )
+        st.error("❌ Google API key not found in environment variables")
+        st.info("💡 Ensure environment is properly initialized at startup")
         st.stop()
 
     if not api_key.startswith("AIza"):
         st.error(
             "❌ Invalid API key format. \
-                Google API keys should start with 'AIza'."
+            Google API keys should start with 'AIza'"
         )
         st.stop()
 
     try:
-        # Set environment variable for Google services
-        os.environ["GOOGLE_API_KEY"] = api_key
-        # Test API connectivity with minimal request
+        # Test API connectivity
         test_llm = ChatGoogleGenerativeAI(
-            model="gemini-2.0-flash", temperature=0
+            model="gemini-2.0-flash",
+            temperature=0,
         )
         test_llm.invoke("test")
         st.success("✅ API key validated successfully")

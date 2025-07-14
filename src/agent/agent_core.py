@@ -1,38 +1,16 @@
-# %%
 import os
 from typing import TypedDict, List
 from langchain_core.documents import Document
-from langchain_core.messages import (
-    HumanMessage,
-    SystemMessage,
-)
-from langchain_google_genai import (
-    ChatGoogleGenerativeAI,
-    GoogleGenerativeAIEmbeddings,
-)
+from langchain_core.messages import HumanMessage, SystemMessage
+from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_chroma import Chroma
 from langgraph.graph import START, END, StateGraph
-import streamlit as st
 
 # ─── Configuration ──────────────────────────────────────────────────────────
-
-
-# Replace with Streamlit secrets management
-def get_google_api_key():
-    """Get Google API key from Streamlit secrets"""
-    try:
-        return st.secrets["GOOGLE_API_KEY"]
-    except KeyError:
-        st.error("❌ GOOGLE_API_KEY not found in Streamlit secrets")
-        st.stop()
-
-
-# Set the API key for Google services
-os.environ["GOOGLE_API_KEY"] = get_google_api_key()
-CHROMA_DB_PATH = st.secrets.get(
+CHROMA_DB_PATH = os.environ.get(
     "CHROMA_DB_PATH", "src/utils/vectorstore/db_chroma"
 )
-COLLECTION_NAME = st.secrets.get("COLLECTION_NAME", "v_db")
+COLLECTION_NAME = os.environ.get("COLLECTION_NAME", "v_db")
 
 
 # ─── State Definition ───────────────────────────────────────────────────────
@@ -40,34 +18,34 @@ class State(TypedDict):
     question: str
     context: List[Document]
     answer: str
+    db: Chroma  # Properly typed as Chroma instead of generic object
 
 
-# ─── Initialize LLM and Vector Store ────────────────────────────────────────
-llm = ChatGoogleGenerativeAI(model="gemini-2.0-flash", temperature=0.1)
-doc_embeddings = GoogleGenerativeAIEmbeddings(
-    model="models/text-embedding-004"
-)
+# ─── Initialize LLM ─────────────────────────────────────────────────────────
+# Now we can use os.environ directly since it's set at startup
+api_key = os.environ.get("GOOGLE_API_KEY")
+if not api_key:
+    raise ValueError("GOOGLE_API_KEY not found in environment variables")
 
-db = Chroma(
-    collection_name=COLLECTION_NAME,
-    persist_directory=CHROMA_DB_PATH,
-    embedding_function=doc_embeddings,  # Retrieval-only
+llm = ChatGoogleGenerativeAI(
+    model="gemini-2.0-flash",
+    temperature=0.1,
 )
 
 
 # ─── Agent Functions ────────────────────────────────────────────────────────
 def retrieve(state: State):
-    """Fetch top-3 similar document chunks."""
-    docs = db.similarity_search(query=state["question"], k=3)
+    """Fetch top-3 similar document chunks using provided database"""
+    # Now type checker knows state["db"] is a Chroma instance
+    docs = state["db"].similarity_search(query=state["question"], k=3)
     return {"context": docs}
 
 
 def generate(state: State):
-    """Generate answer based on retrieved context."""
-    # Create proper message objects for ChatGoogleGenerativeAI
+    """Generate answer based on retrieved context"""
     system_prompt = (
-        "You are an assistant. Use the context below to answer \
-            the question.\n\n"
+        "You are an assistant. Use the context below to \
+            answer the question.\n\n"
         f"Context: \n{chr(10).join(d.page_content for d in state['context'])}"
     )
 
@@ -80,7 +58,7 @@ def generate(state: State):
     return {"answer": response}
 
 
-# ─── Build and Compile Graph ────────────────────────────────────────────────
+# ─── Build Graph ────────────────────────────────────────────────────────────
 builder = StateGraph(State)
 builder.add_node("retrieve", retrieve)
 builder.add_node("generate", generate)
@@ -90,9 +68,12 @@ builder.add_edge("generate", END)
 graph = builder.compile()
 
 
-def ask_rag(question: str):
-    """Run the RAG agent for a single query."""
-    for event in graph.stream({"question": question}, stream_mode="values"):
+def ask_rag_with_connection(question: str, db: Chroma):
+    """Run RAG agent with provided database connection"""
+    # Also properly type the db parameter here
+    for event in graph.stream(
+        {"question": question, "db": db}, stream_mode="values"
+    ):
         if event.get("answer"):
             ans = event["answer"]
             return ans.content if hasattr(ans, "content") else ans
