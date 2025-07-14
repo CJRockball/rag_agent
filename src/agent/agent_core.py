@@ -37,7 +37,7 @@ if not api_key:
 #         max_bucket_size=10,)  # Controls the maximum burst size.)
 
 llm = ChatGoogleGenerativeAI(
-    model="gemini-2.0-flash",
+    model="Gemini 2.0 Flash-Lite",
     temperature=0.1,
 )
 
