@@ -1,19 +1,11 @@
 """Test suite for the RAG agent core functionality."""
 
 import pytest
-from unittest.mock import Mock, patch  # , MagicMock
-from langchain_core.documents import Document
-from langchain_core.messages import (
-    HumanMessage,
-    SystemMessage,
-)
-
-# from typing import List, Dict, Any
 import os
-
-# Import the functions we want to test
-# Note: You'll need to adjust these imports based on your actual file structure
-# from agent_core import ask_rag, retrieve, generate, State, graph
+from unittest.mock import Mock, patch
+from langchain_core.documents import Document
+from langchain_core.messages import HumanMessage, SystemMessage
+from langchain_chroma import Chroma
 
 
 class TestRAGAgent:
@@ -22,24 +14,26 @@ class TestRAGAgent:
     @pytest.fixture
     def mock_state(self):
         """Create a mock state for testing."""
+        mock_db = Mock(spec=Chroma)
         return {
             "question": "What is artificial intelligence?",
             "context": [
                 Document(
-                    page_content="AI is the simulation of human intelligence\
-                    in machines."
+                    page_content="AI is the simulation of \
+                        human intelligence in machines."
                 ),
                 Document(
                     page_content="Machine learning is a subset of \
                         artificial intelligence."
                 ),
                 Document(
-                    page_content="Deep learning uses neural networks\
-                        with multiple layers."
+                    page_content="Deep learning uses \
+                        neural networks with multiple layers."
                 ),
             ],
-            "answer": "AI is the simulation of human intelligence\
+            "answer": "AI is the simulation of human intelligence \
                 in machines.",
+            "db": mock_db,
         }
 
     @pytest.fixture
@@ -47,26 +41,37 @@ class TestRAGAgent:
         """Create mock documents for testing."""
         return [
             Document(
-                page_content="AI is the simulation of human intelligence\
-                    in machines."
+                page_content="AI is the simulation of \
+                    human intelligence in machines."
             ),
             Document(
-                page_content="Machine learning is a subset of\
+                page_content="Machine learning is a subset of \
                     artificial intelligence."
             ),
             Document(
-                page_content="Deep learning uses neural networks \
-                    with multiple layers."
+                page_content="Deep learning uses \
+                    neural networks with multiple layers."
             ),
         ]
 
-    @patch("src.agent.agent_core.db")
-    def test_retrieve_function(self, mock_db, mock_state):
+    @pytest.fixture
+    def mock_chroma_db(self):
+        """Create a mock Chroma database."""
+        mock_db = Mock(spec=Chroma)
+        mock_db.similarity_search.return_value = [
+            Document(page_content="Test document 1"),
+            Document(page_content="Test document 2"),
+            Document(page_content="Test document 3"),
+        ]
+        return mock_db
+
+    @patch.dict(os.environ, {"GOOGLE_API_KEY": "test_api_key"})
+    def test_retrieve_function(self, mock_state, mock_documents):
         """Test the retrieve function returns correct context."""
         from src.agent.agent_core import retrieve
 
-        # Mock the similarity search
-        mock_db.similarity_search.return_value = mock_state["context"]
+        # Mock the database in the state
+        mock_state["db"].similarity_search.return_value = mock_documents
 
         # Test the retrieve function
         result = retrieve(mock_state)
@@ -75,10 +80,11 @@ class TestRAGAgent:
         assert "context" in result
         assert len(result["context"]) == 3
         assert all(isinstance(doc, Document) for doc in result["context"])
-        mock_db.similarity_search.assert_called_once_with(
+        mock_state["db"].similarity_search.assert_called_once_with(
             query=mock_state["question"], k=3
         )
 
+    @patch.dict(os.environ, {"GOOGLE_API_KEY": "test_api_key"})
     @patch("src.agent.agent_core.llm")
     def test_generate_function(self, mock_llm, mock_state):
         """Test the generate function produces correct response."""
@@ -105,10 +111,13 @@ class TestRAGAgent:
         assert isinstance(call_args[0], SystemMessage)
         assert isinstance(call_args[1], HumanMessage)
 
+    @patch.dict(os.environ, {"GOOGLE_API_KEY": "test_api_key"})
     @patch("src.agent.agent_core.graph")
-    def test_ask_rag_function(self, mock_graph):
-        """Test the ask_rag function end-to-end."""
-        from src.agent.agent_core import ask_rag
+    def test_ask_rag_with_connection_function(
+        self, mock_graph, mock_chroma_db
+    ):
+        """Test the ask_rag_with_connection function end-to-end."""
+        from src.agent.agent_core import ask_rag_with_connection
 
         # Mock the graph stream
         mock_response = Mock()
@@ -117,74 +126,83 @@ class TestRAGAgent:
         )
 
         mock_graph.stream.return_value = [
-            {"question": "What is AI?"},
+            {"question": "What is AI?", "db": mock_chroma_db},
             {"context": []},
             {"answer": mock_response},
         ]
 
-        # Test the ask_rag function
-        result = ask_rag("What is AI?")
+        # Test the ask_rag_with_connection function
+        result = ask_rag_with_connection("What is AI?", mock_chroma_db)
 
         # Assertions
         assert (
-            result == "AI is the simulation of human intelligence in machines."
+            result
+            == "AI is the simulation of \
+                human intelligence in machines."
         )
         mock_graph.stream.assert_called_once_with(
-            {"question": "What is AI?"},
+            {"question": "What is AI?", "db": mock_chroma_db},
             stream_mode="values",
         )
 
+    @patch.dict(os.environ, {"GOOGLE_API_KEY": "test_api_key"})
     @patch("src.agent.agent_core.graph")
-    def test_ask_rag_no_answer(self, mock_graph):
-        """Test ask_rag when no answer is found."""
-        from src.agent.agent_core import ask_rag
+    def test_ask_rag_no_answer(self, mock_graph, mock_chroma_db):
+        """Test ask_rag_with_connection when no answer is found."""
+        from src.agent.agent_core import ask_rag_with_connection
 
         # Mock the graph stream with no answer
         mock_graph.stream.return_value = [
-            {"question": "What is AI?"},
+            {"question": "What is AI?", "db": mock_chroma_db},
             {"context": []},
         ]
 
-        # Test the ask_rag function
-        result = ask_rag("What is AI?")
+        # Test the ask_rag_with_connection function
+        result = ask_rag_with_connection("What is AI?", mock_chroma_db)
 
         # Assertions
         assert result is None
 
+    @patch.dict(os.environ, {"GOOGLE_API_KEY": "test_api_key"})
     @patch("src.agent.agent_core.graph")
-    def test_ask_rag_with_string_answer(self, mock_graph):
-        """Test ask_rag when answer is a string instead of
-        object with content.
-        """
-        from src.agent.agent_core import ask_rag
+    def test_ask_rag_with_string_answer(self, mock_graph, mock_chroma_db):
+        """Test ask_rag_with_connection when answer is a string."""
+        from src.agent.agent_core import ask_rag_with_connection
 
         # Mock the graph stream with string answer
         mock_graph.stream.return_value = [
-            {"question": "What is AI?"},
+            {"question": "What is AI?", "db": mock_chroma_db},
             {"context": []},
             {"answer": "Direct string answer"},
         ]
 
-        # Test the ask_rag function
-        result = ask_rag("What is AI?")
+        # Test the ask_rag_with_connection function
+        result = ask_rag_with_connection("What is AI?", mock_chroma_db)
 
         # Assertions
         assert result == "Direct string answer"
 
+    @patch.dict(os.environ, {"GOOGLE_API_KEY": "test_api_key"})
     def test_state_structure(self):
         """Test that the State TypedDict has correct structure."""
         from src.agent.agent_core import State
+        from langchain_chroma import Chroma
+
+        # Create a mock Chroma database
+        mock_db = Mock(spec=Chroma)
 
         # Test creating a state instance
         state = State(
             question="Test question",
             context=[Document(page_content="Test content")],
             answer="Test answer",
+            db=mock_db,
         )
 
         assert "question" in state
         assert "context" in state
         assert "answer" in state
+        assert "db" in state
         assert isinstance(state["context"], list)
         assert isinstance(state["context"][0], Document)
 
@@ -195,35 +213,38 @@ class TestRAGAgentIntegration:
     @pytest.fixture
     def setup_test_environment(self):
         """Set up test environment with proper configurations."""
-        # Mock environment variables
-        with patch.dict(os.environ, {"GOOGLE_API_KEY": "test_key"}):
+        test_env = {
+            "GOOGLE_API_KEY": "test_api_key",
+            "CHROMA_DB_PATH": "test_db_path",
+            "COLLECTION_NAME": "test_collection",
+        }
+        with patch.dict(os.environ, test_env):
             yield
 
-    @patch("src.agent.agent_core.Chroma")
     @patch("src.agent.agent_core.ChatGoogleGenerativeAI")
-    @patch("src.agent.agent_core.GoogleGenerativeAIEmbeddings")
     def test_component_initialization(
-        self,
-        mock_embeddings,
-        mock_llm,
-        mock_chroma,
-        setup_test_environment,
+        self, mock_llm_class, setup_test_environment
     ):
         """Test that all components are properly initialized."""
-        # Import after patching
+        # Import after environment setup
         import src.agent.agent_core
 
         # Verify that components are initialized
         assert src.agent.agent_core.llm is not None
-        assert src.agent.agent_core.doc_embeddings is not None
-        assert src.agent.agent_core.db is not None
-        assert src.agent.agent_core.graph is not None
+        mock_llm_class.assert_called_once()
 
-    @patch("src.agent.agent_core.db")
+    @patch.dict(os.environ, {"GOOGLE_API_KEY": "test_api_key"})
     @patch("src.agent.agent_core.llm")
-    def test_full_rag_pipeline(self, mock_llm, mock_db):
+    def test_full_rag_pipeline(self, mock_llm, mock_chroma_db):
         """Test the full RAG pipeline from question to answer."""
-        from src.agent.agent_core import ask_rag
+        from src.agent.agent_core import ask_rag_with_connection
+
+        # Mock the LLM response
+        mock_response = Mock()
+        mock_response.content = (
+            "AI is the simulation of human intelligence in machines."
+        )
+        mock_llm.invoke.return_value = mock_response
 
         # Mock the database response
         mock_documents = [
@@ -233,24 +254,17 @@ class TestRAGAgentIntegration:
             Document(page_content="Machine learning is a subset of AI."),
             Document(page_content="Deep learning uses neural networks."),
         ]
-        mock_db.similarity_search.return_value = mock_documents
-
-        # Mock the LLM response
-        mock_response = Mock()
-        mock_response.content = (
-            "AI is the simulation of human intelligence in machines."
-        )
-        mock_llm.invoke.return_value = mock_response
+        mock_chroma_db.similarity_search.return_value = mock_documents
 
         # Mock the graph to simulate the actual flow
         with patch("src.agent.agent_core.graph") as mock_graph:
             mock_graph.stream.return_value = [
-                {"question": "What is AI?"},
+                {"question": "What is AI?", "db": mock_chroma_db},
                 {"context": mock_documents},
                 {"answer": mock_response},
             ]
 
-            result = ask_rag("What is AI?")
+            result = ask_rag_with_connection("What is AI?", mock_chroma_db)
 
             assert (
                 result
@@ -261,20 +275,21 @@ class TestRAGAgentIntegration:
 class TestRAGAgentErrorHandling:
     """Test error handling in the RAG agent."""
 
-    @patch("src.agent.agent_core.db")
-    def test_retrieve_with_empty_results(self, mock_db):
+    @patch.dict(os.environ, {"GOOGLE_API_KEY": "test_api_key"})
+    def test_retrieve_with_empty_results(self, mock_chroma_db):
         """Test retrieve function with empty search results."""
         from src.agent.agent_core import retrieve
 
-        mock_db.similarity_search.return_value = []
+        mock_chroma_db.similarity_search.return_value = []
 
-        state = {"question": "What is AI?"}
+        state = {"question": "What is AI?", "db": mock_chroma_db}
         result = retrieve(state)
 
         assert result["context"] == []
 
+    @patch.dict(os.environ, {"GOOGLE_API_KEY": "test_api_key"})
     @patch("src.agent.agent_core.llm")
-    def test_generate_with_llm_error(self, mock_llm):
+    def test_generate_with_llm_error(self, mock_llm, mock_chroma_db):
         """Test generate function when LLM throws an error."""
         from src.agent.agent_core import generate
 
@@ -283,20 +298,31 @@ class TestRAGAgentErrorHandling:
         state = {
             "question": "What is AI?",
             "context": [Document(page_content="Test content")],
+            "db": mock_chroma_db,
         }
 
         with pytest.raises(Exception):
             generate(state)
 
+    @patch.dict(os.environ, {"GOOGLE_API_KEY": "test_api_key"})
     @patch("src.agent.agent_core.graph")
-    def test_ask_rag_with_graph_error(self, mock_graph):
-        """Test ask_rag when graph throws an error."""
-        from src.agent.agent_core import ask_rag
+    def test_ask_rag_with_graph_error(self, mock_graph, mock_chroma_db):
+        """Test ask_rag_with_connection when graph throws an error."""
+        from src.agent.agent_core import ask_rag_with_connection
 
         mock_graph.stream.side_effect = Exception("Graph execution failed")
 
         with pytest.raises(Exception):
-            ask_rag("What is AI?")
+            ask_rag_with_connection("What is AI?", mock_chroma_db)
+
+    @patch.dict(os.environ, {"GOOGLE_API_KEY": "test_api_key"})
+    def test_missing_api_key(self):
+        """Test behavior when API key is missing."""
+        with patch.dict(os.environ, {}, clear=True):
+            with pytest.raises(ValueError, match="GOOGLE_API_KEY not found"):
+                # This should raise an error when trying to
+                # initialize the module
+                import src.agent.agent_core  # noqa: F401
 
 
 if __name__ == "__main__":

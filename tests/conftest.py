@@ -4,6 +4,7 @@ import pytest
 import os
 from unittest.mock import Mock, patch
 from langchain_core.documents import Document
+from langchain_chroma import Chroma
 
 
 @pytest.fixture(scope="session")
@@ -13,6 +14,7 @@ def test_environment():
         "GOOGLE_API_KEY": "test_api_key_for_testing",
         "CHROMA_DB_PATH": "test_db_path",
         "COLLECTION_NAME": "test_collection",
+        "DOC_PATH": "test_doc_path",
     }
 
     with patch.dict(os.environ, test_env):
@@ -24,8 +26,8 @@ def sample_documents():
     """Provide sample documents for testing."""
     return [
         Document(
-            page_content="Artificial Intelligence (AI) is the simulation \
-                of human intelligence in machines.",
+            page_content="Artificial Intelligence (AI) is the simulation of \
+                human intelligence in machines.",
             metadata={
                 "source": "ai_basics.pdf",
                 "page": 1,
@@ -37,8 +39,8 @@ def sample_documents():
             metadata={"source": "ml_intro.pdf", "page": 1},
         ),
         Document(
-            page_content="Deep Learning uses neural networks with \
-                multiple layers to model and understand complex patterns.",
+            page_content="Deep Learning uses neural networks with multiple \
+                layers to model and understand complex patterns.",
             metadata={"source": "dl_guide.pdf", "page": 1},
         ),
     ]
@@ -47,12 +49,13 @@ def sample_documents():
 @pytest.fixture
 def sample_state():
     """Provide sample state for testing."""
+    mock_db = Mock(spec=Chroma)
     return {
         "question": "What is artificial intelligence?",
         "context": [
             Document(
-                page_content="AI is the simulation of human intelligence \
-                    in machines."
+                page_content="AI is the simulation of \
+                    human intelligence in machines."
             ),
             Document(
                 page_content="Machine learning is a subset of \
@@ -61,6 +64,7 @@ def sample_state():
             Document(page_content="Deep learning uses neural networks."),
         ],
         "answer": "AI is the simulation of human intelligence in machines.",
+        "db": mock_db,
     }
 
 
@@ -75,7 +79,7 @@ def mock_llm_response():
 @pytest.fixture
 def mock_chroma_db():
     """Mock ChromaDB for testing."""
-    mock_db = Mock()
+    mock_db = Mock(spec=Chroma)
     mock_db.similarity_search.return_value = [
         Document(page_content="Mock document content 1"),
         Document(page_content="Mock document content 2"),
@@ -88,14 +92,19 @@ def mock_chroma_db():
 def mock_embeddings():
     """Mock embeddings for testing."""
     mock = Mock()
-    mock.embed_query.return_value = [
-        0.1,
-        0.2,
-        0.3,
-        0.4,
-        0.5,
-    ]
+    mock.embed_query.return_value = [0.1, 0.2, 0.3, 0.4, 0.5]
     return mock
+
+
+@pytest.fixture
+def mock_streamlit_secrets():
+    """Mock Streamlit secrets for testing."""
+    return {
+        "GOOGLE_API_KEY": "test_api_key",
+        "CHROMA_DB_PATH": "test_db_path",
+        "COLLECTION_NAME": "test_collection",
+        "DOC_PATH": "test_doc_path",
+    }
 
 
 @pytest.fixture(autouse=True)
@@ -103,11 +112,15 @@ def reset_streamlit_state():
     """Reset Streamlit session state before each test."""
     # This fixture automatically runs before each test
     # to ensure clean state for Streamlit tests
-    import streamlit as st
+    try:
+        import streamlit as st
 
-    if hasattr(st, "session_state"):
-        for key in list(st.session_state.keys()):
-            del st.session_state[key]
+        if hasattr(st, "session_state"):
+            for key in list(st.session_state.keys()):
+                del st.session_state[key]
+    except ImportError:
+        # Streamlit not available in test environment
+        pass
 
 
 class MockStreamlitApp:
@@ -222,13 +235,28 @@ def large_db_response():
     return [Document(page_content=f"Document {i} content") for i in range(100)]
 
 
+# Mock fixtures for Streamlit secrets
+@pytest.fixture
+def mock_streamlit_secrets_patch():
+    """Patch Streamlit secrets for testing."""
+    mock_secrets = {
+        "GOOGLE_API_KEY": "test_api_key",
+        "CHROMA_DB_PATH": "test_db_path",
+        "COLLECTION_NAME": "test_collection",
+        "DOC_PATH": "test_doc_path",
+    }
+
+    with patch("streamlit.secrets", mock_secrets):
+        yield mock_secrets
+
+
 # Configuration for test runs
 def pytest_configure(config):
     """Configure pytest settings."""
     # Add custom markers
     config.addinivalue_line(
         "markers",
-        "slow: marks tests as slow (deselect with '-m 'not slow'')",
+        "slow: marks tests as slow (deselect with '-m \"not slow\"')",
     )
     config.addinivalue_line(
         "markers",
