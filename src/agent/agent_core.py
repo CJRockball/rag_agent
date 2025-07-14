@@ -6,6 +6,8 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_chroma import Chroma
 from langgraph.graph import START, END, StateGraph
 
+# from langchain_core.rate_limiters import InMemoryRateLimiter
+
 # ─── Configuration ──────────────────────────────────────────────────────────
 CHROMA_DB_PATH = os.environ.get(
     "CHROMA_DB_PATH", "src/utils/vectorstore/db_chroma"
@@ -26,6 +28,13 @@ class State(TypedDict):
 api_key = os.environ.get("GOOGLE_API_KEY")
 if not api_key:
     raise ValueError("GOOGLE_API_KEY not found in environment variables")
+
+# rate_limiter = InMemoryRateLimiter(
+#         # Super slow! request once every 10 seconds!!
+#         requests_per_second=0.1,
+#         # Wake up every 100 ms to check whether allowed to make a request,
+#         check_every_n_seconds=0.1,
+#         max_bucket_size=10,)  # Controls the maximum burst size.)
 
 llm = ChatGoogleGenerativeAI(
     model="gemini-2.0-flash",

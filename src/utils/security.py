@@ -1,6 +1,7 @@
 import os
 import streamlit as st
-from langchain_google_genai import ChatGoogleGenerativeAI
+
+# from langchain_google_genai import ChatGoogleGenerativeAI
 
 
 def validate_api_key():
@@ -20,14 +21,14 @@ def validate_api_key():
         )
         st.stop()
 
-    try:
-        # Test API connectivity
-        test_llm = ChatGoogleGenerativeAI(
-            model="gemini-2.0-flash",
-            temperature=0,
-        )
-        test_llm.invoke("test")
-        st.success("✅ API key validated successfully")
-    except Exception as e:
-        st.error(f"❌ API key validation failed: {str(e)}")
-        st.stop()
+    # try:
+    #     # Test API connectivity
+    #     test_llm = ChatGoogleGenerativeAI(
+    #         model="gemini-2.0-flash",
+    #         temperature=0,
+    #     )
+    #     test_llm.invoke("test")
+    #     st.success("✅ API key validated successfully")
+    # except Exception as e:
+    #     st.error(f"❌ API key validation failed: {str(e)}")
+    #     st.stop()
