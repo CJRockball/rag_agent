@@ -1,8 +1,13 @@
+import sys
 import os
 import time
 import streamlit as st
 from src.utils.security import validate_api_key
 from src.utils.rate_limit import allow_request, record_request
+
+__import__("pysqlite3")
+
+sys.modules["sqlite3"] = sys.modules.pop("pysqlite3")
 
 # ─── Streamlit Configuration ───────────────────────────────────────────────
 st.set_page_config(
